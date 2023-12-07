@@ -16,7 +16,13 @@ export class RechercheProduitsComponent {
   };
 
   search() {
-    this.searchEvent.emit(this.searchTerms);
+    const newSearchTerms = {
+      id: this.searchTerms.id,
+      name: this.searchTerms.name,
+      description: this.searchTerms.description,
+      price: this.searchTerms.price
+    };  
+    this.searchEvent.emit(newSearchTerms);
   }
 
   resetFilters() {

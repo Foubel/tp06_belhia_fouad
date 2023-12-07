@@ -1,6 +1,6 @@
 export const environment = {
     production: false,
-    backendLoginClient: 'https://tp5-ly5s.onrender.com/api/utilisateur/login',
-    backendCatalogue: 'https://tp5-ly5s.onrender.com/api/catalogue',
+    backendLoginClient: 'https://tp06-s58v.onrender.com/api/utilisateur/login',
+    backendCatalogue: 'https://tp06-s58v.onrender.com/api/catalogue',
   };
   

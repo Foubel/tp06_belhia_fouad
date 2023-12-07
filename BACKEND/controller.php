@@ -35,9 +35,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 				if (!empty($queryParams['description']) && stripos($item['description'], $queryParams['description']) === false) {
 					return false;
 				}
-				if (!empty($queryParams['price']) && $item['price'] != $queryParams['price']) {
+				if (!empty($queryParams['price']) && strpos((string) $item['price'], (string) $queryParams['price']) === false) {
 					return false;
-				}
+				}				  
 	
 				return true;
 			});

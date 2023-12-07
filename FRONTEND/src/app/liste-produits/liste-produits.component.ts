@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
+import { Observable, Subject, tap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth.service';
 import { Store } from '@ngxs/store';
@@ -23,16 +23,19 @@ export class ListeProduitsComponent implements OnInit {
     this.produits$ = this.searchTerms.pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      switchMap((searchTerms) => this.searchProducts(searchTerms)),
+      switchMap((searchTerms) => {
+        return this.searchProducts(searchTerms);
+      }),  
+      map(response => Object.values(response)),
       catchError(error => {
         console.error(error);
         return [];
       })
     );
   }
+  
 
   applyFilters(searchTerms: any): void {
-    console.log('Filtres appliqués :', searchTerms); 
     this.searchTerms.next(searchTerms);
   }
 
@@ -43,6 +46,7 @@ export class ListeProduitsComponent implements OnInit {
 
     return this.http.get<any[]>(environment.backendCatalogue, { headers, params });
   }
+
 
   addToCart(product: any): void {
     this.store.dispatch(new AddToCart(product));
