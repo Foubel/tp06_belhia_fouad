@@ -6,14 +6,14 @@ import { Component, EventEmitter, Output } from '@angular/core';
   styleUrls: ['./recherche-produits.component.css']
 })
 export class RechercheProduitsComponent {
+  @Output() searchEvent = new EventEmitter<any>();
+
   searchTerms = {
     id: '',
     name: '',
     description: '',
     price: ''
   };
-  
-  @Output() searchEvent = new EventEmitter<any>();
 
   search() {
     this.searchEvent.emit(this.searchTerms);
@@ -23,5 +23,4 @@ export class RechercheProduitsComponent {
     this.searchTerms = { id: '', name: '', description: '', price: '' };
     this.searchEvent.emit(this.searchTerms);
   }
-
 }

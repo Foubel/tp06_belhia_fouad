@@ -1,10 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Store } from '@ngxs/store';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth.service';
+import { Store } from '@ngxs/store';
 import { AddToCart, RemoveFromCart } from '../panier/panier.state';
+
 
 @Component({
   selector: 'app-liste-produits',
@@ -12,39 +14,34 @@ import { AddToCart, RemoveFromCart } from '../panier/panier.state';
   styleUrls: ['./liste-produits.component.css']
 })
 export class ListeProduitsComponent implements OnInit {
-  produits$!: Observable<any[]>; // Observable pour les produits
-  searchTerms: any = {}; // Stockez les termes de recherche ici
+  produits$!: Observable<any[]>; 
+  private searchTerms = new Subject<any>();
 
-  constructor(private http: HttpClient, private store: Store, private authService: AuthService) { }
+  constructor(private http: HttpClient, private authService: AuthService, private store: Store) { }
 
   ngOnInit(): void {
-    this.produits$ = this.getProducts().pipe(
-      map(products => this.filterProducts(products, this.searchTerms))
+    this.produits$ = this.searchTerms.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((searchTerms) => this.searchProducts(searchTerms)),
+      catchError(error => {
+        console.error(error);
+        return [];
+      })
     );
-  }
-
-  getProducts(): Observable<any[]> {
-    const jwtToken = this.authService.getToken();
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${jwtToken}` });
-
-    return this.http.get<any[]>(environment.backendCatalogue, { headers });
   }
 
   applyFilters(searchTerms: any): void {
-    this.searchTerms = searchTerms;
-    this.produits$ = this.getProducts().pipe(
-      map(products => this.filterProducts(products, searchTerms))
-    );
+    console.log('Filtres appliqués :', searchTerms); 
+    this.searchTerms.next(searchTerms);
   }
 
-  filterProducts(products: any[], searchTerms: any): any[] {
-    // Implémentez ici la logique de filtrage basée sur searchTerms
-    return products.filter(product => {
-      return (!searchTerms.id || product.id.toString().includes(searchTerms.id)) &&
-             (!searchTerms.name || product.name.toLowerCase().includes(searchTerms.name.toLowerCase())) &&
-             (!searchTerms.description || product.description.toLowerCase().includes(searchTerms.description.toLowerCase())) &&
-             (!searchTerms.price || product.price.toString().includes(searchTerms.price));
-    });
+  private searchProducts(searchTerms: any): Observable<any[]> {
+    const jwtToken = this.authService.getToken();
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${jwtToken}` });
+    const params = new HttpParams({ fromObject: searchTerms });
+
+    return this.http.get<any[]>(environment.backendCatalogue, { headers, params });
   }
 
   addToCart(product: any): void {
