@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, Subject, tap } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, catchError, map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, catchError, map, startWith } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth.service';
 import { Store } from '@ngxs/store';
@@ -23,6 +23,7 @@ export class ListeProduitsComponent implements OnInit {
     this.produits$ = this.searchTerms.pipe(
       debounceTime(300),
       distinctUntilChanged(),
+      startWith({}),
       switchMap((searchTerms) => {
         return this.searchProducts(searchTerms);
       }),  
